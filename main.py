@@ -30,6 +30,7 @@ bat_time = time(hour=4, tzinfo=JST)
 # Init daily_dict at regular time
 @tasks.loop(time=bat_time)
 async def bat_task():
+    global daily_dict
     daily_dict = {}
 
 # Start listen
