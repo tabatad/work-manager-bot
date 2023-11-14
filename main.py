@@ -5,27 +5,34 @@ import os
 from dotenv import load_dotenv
 from datetime import time, timezone, timedelta, datetime
 
+# Time formatting
 def get_time_str(sec):
     m, s = divmod(sec, 60)
     h, m = divmod(m, 60)
     return str(h) + '時間' + str(m) + '分' + str(s) + '秒'
 
+# Get user ID for each guild
 def get_user_id_per_guild(user, guild):
     return str(user.id) + str(guild.id)
 
+# Define bot
 bot = commands.Bot(command_prefix="!",intents = discord.Intents.all())
 
+# Init time dictionary
 pretime_dict = {}
 daily_dict = {}
 total_dict = {}
 
+# Set the tiem to run the batch prcess
 JST = timezone(timedelta(hours=+9), "JST")
 bat_time = time(hour=4, tzinfo=JST)
 
+# Init daily_dict at regular time
 @tasks.loop(time=bat_time)
 async def bat_task():
     daily_dict = {}
 
+# Start listen
 @bot.event
 async def on_ready():
     print("ready")
@@ -38,6 +45,7 @@ async def on_ready():
     except Exception as e:
         print(exec)
 
+# Post work hours to the '作業ログ' channel when exiting the voice channel
 @bot.event
 async def on_voice_state_update(member, before, after):
     if(before.channel is None):
@@ -71,6 +79,7 @@ async def on_voice_state_update(member, before, after):
             if(channel.name == '作業ログ'):
                 await channel.send(embed=embed)
 
+# Show daily working time
 @bot.tree.command(name="daily", description="show daily working time")
 async def daily(interaction: discord.Interaction):
     id = get_user_id_per_guild(interaction.user, interaction.guild)
@@ -91,6 +100,7 @@ async def daily(interaction: discord.Interaction):
         )
     await interaction.response.send_message(embed=embed)
 
+# Show total working time
 @bot.tree.command(name="total", description="show total working time")
 async def total(interaction: discord.Interaction):
     id = get_user_id_per_guild(interaction.user, interaction.guild)
@@ -111,5 +121,6 @@ async def total(interaction: discord.Interaction):
         )
     await interaction.response.send_message(embed=embed)
 
+# Load bot token
 load_dotenv()
 bot.run(os.getenv("TOKEN"))
